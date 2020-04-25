@@ -1,14 +1,14 @@
 <template>
   <div class="home">
       <div class="head">
-          <a-row >
-              <a-col :span="12">
-                  <router-link to="order/add"><a-button >开单</a-button></router-link>
-              </a-col>
-              <a-col :span="12">
-                  <router-link to="goods/add"><a-button >添加客户</a-button></router-link>
-              </a-col>
-          </a-row>
+          <van-row >
+              <van-col :span="12">
+                  <router-link to="order/add"><van-button >开单</van-button></router-link>
+              </van-col>
+              <van-col :span="12">
+                  <router-link to="goods/add"><van-button >添加客户</van-button></router-link>
+              </van-col>
+          </van-row>
       </div>
 
   </div>
