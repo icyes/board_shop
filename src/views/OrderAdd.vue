@@ -9,24 +9,17 @@ export default {
     category: {}
   }),
   beforeCreate() {
-  },
-  created() {
-    this.getCateForay();
+    this.getCategory();
     this.getUsers();
-    this.getAddress();
-    this.getRegionInfo();
     this.getRegionList();
-    this.addUser();
   },
 
   methods: {
-    async getCateForay() {
+    async getCategory() {
       const { data } = await this.$apis.category();
       data && (this.category = data);
     },
-    async getUsers() {
-      const { data } = await this.$apis.searchUser(5641);
-    },
+
     async getAddress() {
       const { data } = await this.$apis.address(1);
     },
