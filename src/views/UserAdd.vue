@@ -17,9 +17,9 @@
       <div ref="scroll" class="search-list" :class="{'show':users&&users.length>0}">
           <div>
               <van-cell @click.native="onUserItem(item)" v-for="item in users" :key="item.userId" :title="item.realName" :value="item.mobile" />
-              <van-row v-if="users&&users.length>0" style="height: 30px;padding: 10px 0" type="flex" align="center" justify="center" class="text-grey font-df">—— 没有更多了 ——</van-row>
+              <van-row v-if="keyWord!=='' && users&&users.length>0" style="height: 30px;padding: 10px 0" type="flex" align="center" justify="center" class="text-grey font-df">—— 没有更多了 ——</van-row>
           </div>
-          <van-row style="height: 100%" v-if="!users||users.length==0" type="flex" align="center" justify="center" class="text-grey font-df">当前暂无用户</van-row>
+          <van-row style="height: 100%" v-if="keyWord!=='' && (!users||users.length==0)" type="flex" align="center" justify="center" class="text-grey font-df">当前暂无用户</van-row>
       </div>
 
 
@@ -151,7 +151,7 @@
         };
         const { data } = await this.$apis.addUser(_data);
       },
-     async getAreaList(i = 0,pid =0){
+      async getAreaList(i = 0,pid =0){
             const type = this.areaType[i];
             this.areaList[type] = await this.getRegionList(pid,i);
             if(i <2 &&this.areaList[type]!={}){
