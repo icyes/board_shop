@@ -1,229 +1,367 @@
 <template>
   <div class="container">
-      <van-pull-refresh disabled v-model="isLoading" @refresh="onRefresh">
-      <van-nav-bar
-              :title="title"
-              left-text="返回"
-              left-arrow
-              @click-left="$router.go(-1)"
-      />
-      <van-search
-              v-model="keyWord"
-              shape="round"
-              background="#fff"
-              placeholder="请输入手机号/姓名"
-              @input="searchUser"
-      />
-      <div ref="scroll" class="search-list" :class="{'show':users&&users.length>0}">
-          <div>
-              <van-cell @click.native="onUserItem(item)" v-for="item in users" :key="item.userId" :title="item.realName" :value="item.mobile" />
-              <van-row v-if="users&&users.length>0" style="height: 30px;padding: 10px 0" type="flex" align="center" justify="center" class="text-grey font-df">—— 没有更多了 ——</van-row>
-          </div>
-          <van-row style="height: 100%" v-if="!users||users.length==0" type="flex" align="center" justify="center" class="text-grey font-df">当前暂无用户</van-row>
+    <van-nav-bar
+      :title="title"
+      left-text="返回"
+      left-arrow
+      @click-left="$router.go(-1)"
+    />
+    <van-search
+      v-model="keyWord"
+      shape="round"
+      background="#fff"
+      placeholder="请输入手机号/姓名"
+      @input="searchUser"
+    />
+    <div
+      ref="scroll"
+      class="search-list"
+      :class="{ show: users && users.length > 0 }"
+    >
+      <div>
+        <van-cell
+          @click.native="onUserItem(index)"
+          v-for="(item, index) in users"
+          :key="item.userId"
+          class="user-item"
+          :class="curUserIdx == index ? 'active' : ''"
+          :title="item.realName"
+          :value="item.mobile"
+        />
+        <van-row
+          v-if="users && users.length > 0"
+          style="height: 30px;padding: 10px 0"
+          type="flex"
+          align="center"
+          justify="center"
+          class="text-grey font-df"
+          >—— 没有更多了 ——</van-row
+        >
       </div>
+      <van-row
+        style="height: 100%"
+        v-if="!users || users.length == 0"
+        type="flex"
+        align="center"
+        justify="center"
+        class="text-grey font-df"
+        >{{ keyWord ? "未搜索到相关用户" : "当前暂无用户" }}</van-row
+      >
+    </div>
+    <div v-if="users && users.length > 0" style="min-height: 100px">
+      <van-divider class="address" content-position="left"
+        >用户地址</van-divider
+      >
 
+      <div class="address-list">
+        <van-tag
+          @click="onAddressItem(index)"
+          class="address-item"
+          :class="index == curAddressIdx ? 'active' : ''"
+          v-for="(item, index) in address"
+          :key="index"
+          size="large"
+          plain
+          type="primary"
+          >{{ item.addName }}</van-tag
+        >
+        <van-row
+          :class="
+            !loading.address && (!address || address.length == 0)
+              ? ''
+              : 'hidden'
+          "
+          type="flex"
+          align="center"
+          justify="center"
+          class="text-grey font-df address-empty"
+          >{{ curUserIdx ? "暂时没有地址" : "请选择用户" }}</van-row
+        >
+      </div>
+    </div>
 
-      <van-divider content-position="center">用户信息</van-divider>
-          <van-form @submit="onSubmit" :show-error="false">
-              <van-field
-                      name="realName"
-                      v-model="realName"
-                      label="姓名"
-                      placeholder="请填写客户姓名"
-                      :rules="[{ required: true, message: '请填写客户姓名' }]"
-              />
-              <van-field
-                      type="mobile"
-                      v-model="mobile"
-                      name="mobile"
-                      label="联系电话"
-                      placeholder="请输入联系电话"
-                      :rules="[{ required: true, message: '请填写联系电话' }]"
-              />
-              <van-field
-                      readonly
-                      v-model="addressInfo"
-                      clickable
-                      name="area"
-                      label="收货地址"
-                      placeholder="点击选择省市区"
-                      @click="showArea = true"
-              />
-              <van-popup v-model="showArea" position="bottom">
-                  <van-area
-                          :area-list="areaList"
-                          @change="onAreaChange"
-                          @confirm="onAreaConfirm"
-                          @cancel="showArea = false"
-                  />
-              </van-popup>
-              <van-field
-                      type="address"
-                      v-model="addressDetail"
-                      name="详细地址"
-                      label-width="20"
-                      input-align="center"
-                      placeholder="请填写详细地址"
-                      :rules="[{ required: true, message: '请填写详细地址' }]"
-              />
-              <div style="margin: 16px;">
-                  <van-row type="flex" justify="center">
-                      <van-button round block style="width:50%" type="info" native-type="submit">
-                          新增客户
-                      </van-button>
-                  </van-row>
-              </div>
-          </van-form>
-      </van-pull-refresh>
+    <van-divider content-position="center" style="margin-top: 20px"
+      >用户信息</van-divider
+    >
+    <van-form @submit="onSubmit" :show-error="false">
+      <van-field
+        name="realName"
+        v-model="userForm.realName"
+        label="姓名"
+        placeholder="请填写客户姓名"
+        :rules="[{ required: true, message: '请填写客户姓名' }]"
+      />
+      <van-field
+        type="mobile"
+        v-model="userForm.mobile"
+        name="mobile"
+        label="联系电话"
+        placeholder="请输入联系电话"
+        :rules="[{ required: true, message: '请填写联系电话' }]"
+      />
+      <van-field
+        readonly
+        v-model="userForm.addressInfo"
+        clickable
+        name="area"
+        label="收货地址"
+        placeholder="点击选择省市区"
+        @click="showArea = true"
+      />
+      <van-popup v-model="showArea" position="bottom">
+        <van-area
+          :area-list="areaList"
+          @change="onAreaChange"
+          @confirm="onAreaConfirm"
+          @cancel="showArea = false"
+        />
+      </van-popup>
+      <van-field
+        type="address"
+        v-model="userForm.addressDetail"
+        label="详细地址"
+        name="addressDetail"
+        placeholder="请填写详细地址"
+        :rules="[{ required: true, message: '请填写详细地址' }]"
+      />
+      <div style="margin: 16px;">
+        <van-row type="flex" justify="center">
+          <van-button
+            round
+            block
+            style="width:50%"
+            type="info"
+            native-type="submit"
+          >
+            新增客户
+          </van-button>
+        </van-row>
+      </div>
+    </van-form>
   </div>
 </template>
 <script>
-  export default {
-    data() {
-      return {
-        addressDetail:'',
-        userId:undefined,
-        regionId:'',
-        mobile:'',
-        realName:'',
-        addressInfo:'',
-        title:'',
-        username: '',
-        password: '',
-        isLoading: false,
-        searching:false,
-        keyWord:'',
-        users:[],
-        loading:false,
-        finished:false,
-        showArea:false,
-        areaListObj:[[],[],[]],
-        areaType:['province_list','city_list','county_list'],
-        areaList:{
-          'province_list': {
-
-          },
-          'city_list': {
-
-          },
-          'county_list': {
-
-          }
-        }
-
+export default {
+  data() {
+    return {
+      title: "",
+      keyWord: "",
+      curUserIdx: undefined,
+      users: [],
+      curAddressIdx: undefined,
+      address: [],
+      userForm: {
+        realName: undefined,
+        mobile: undefined,
+        addressDetail: undefined,
+        addressInfo: undefined,
+        regionId: undefined
+      },
+      loading: {
+        search: false,
+        address: false
+      },
+      showArea: false,
+      areaListObj: [[], [], []],
+      areaType: ["province_list", "city_list", "county_list"],
+      areaList: {
+        "province_list": {},
+        "city_list": {},
+        "county_list": {}
+      }
     };
+  },
+  created() {
+    const { title } = this.$route.meta;
+    if (title) this.title = title;
+    this.getAreaList();
+  },
+  mounted() {
+    this.$nextTick(() => {
+      this.bs = this.$createBsFactory(this.$refs.scroll);
+    });
+  },
+  beforeDestroy() {
+    if (this.bs) this.bs.destroy();
+  },
+  methods: {
+    /**
+     * 用户搜索
+     */
+    searchUser() {
+      const loading = this.loading;
+      if (loading.search) return;
+      loading.search = true;
+      this.userClear();
+      setTimeout(() => {
+        this.getUsers();
+        loading.search = false;
+      }, 500);
     },
-    created() {
-      const {title} = this.$route.meta;
-      if(title)this.title = title;
-      this.getAreaList()
+    userClear: function () {
+      this.curUserIdx =undefined;
+      this.address = undefined;
+      this.curAddressIdx =undefined;
     },
-    mounted() {
-      this.$nextTick(()=>{
-        this.bs = this.$createBsFactory(this.$refs.scroll)
-      })
+    async getUsers() {
+      this.curUserIdx = undefined;
+      if(!this.keyWord){
+        this.userClear();
+        this.users = undefined;
+        return
+      }
+      const { data } = await this.$apis.searchUser(this.keyWord);
+      this.users = data;
+      this.updateBs();
+    },
+    /**
+     * 点击用户获取地址
+     * @param uid
+     * @returns {Promise<void>}
+     */
 
+    async getAddress(uid) {
+      this.loading.address = true;
+      const { data } = await this.$apis.address(uid);
+      this.address = data;
+      await this.$sleep();
+      this.loading.address = false;
     },
-    beforeDestroy() {
-      if(this.bs)this.bs.destroy()
+    onUserItem(index) {
+      this.curAddressIdx =undefined;
+      this.userForm.addressInfo = undefined;
+      this.curUserIdx = index;
+      const user = this.users[index];
+      this.userForm.mobile = user.mobile;
+      this.userForm.realName = user.realName;
+      this.getAddress(user.userId);
     },
-    methods: {
-      async getAddress(uid) {
-        const { data } = await this.$apis.address(uid);
-      },
-      onUserItem(user){
-        this.realName = user.realName;
-        this.mobile = user.mobile;
-        this.userId = user.userId;
-        this.getAddress(this.userId);
-      },
-      onAreaChange(picker, value, index){
-        if(index<2){
-          this.getAreaList(index+1,value[index].code)
-        }
-      },
-      async addUser() {
-        const _data = {
-          realName: this.realName,
-          mobile: this.mobile,
-          addressInfo: this.addressInfo+this.addressDetail,
-          regionId: 120103
-        };
-        const { data } = await this.$apis.addUser(_data);
-      },
-     async getAreaList(i = 0,pid =0){
-            const type = this.areaType[i];
-            this.areaList[type] = await this.getRegionList(pid,i);
-            if(i <2 &&this.areaList[type]!={}){
-              pid = this.areaListObj[i][0]['id'];
-              this.getAreaList(i+1,pid);
-            }
-      },
-      updateBs() {
-        this.$nextTick(()=>{
-          setTimeout(()=>{
-            if (this.bs){
-              this.bs.refresh();
-            }
-          },300)
-        })
+    onAddressItem(index) {
+      this.curAddressIdx = index;
+      const {regionId} = this.address[index];
+      this.getRegionInfo(regionId)
+    },
 
-      },
-      async getUsers() {
-        const { data } = await this.$apis.searchUser(this.keyWord);
-        this.users = data;
-        this.updateBs();
-      },
-      async getRegionInfo() {
-        const { data } = await this.$apis.regionInfo(110116);
-      },
-      //获取省市县
-      async getRegionList(pid = 0,type=0) {
-        const { data } = await this.$apis.regionList(pid);
-        this.areaListObj[type] = data
-        const result ={};
-        data.forEach(m=>{result[m.id] =m.name })
-        return result
-      },
-      onSubmit(values) {
-        console.log('submit', values);
-      },
-      onRefresh() {
+    //地区详情
+    async getRegionInfo(regionId) {
+      const { data } = await this.$apis.regionInfo(regionId);
+      this.userForm.addressInfo = data.allName;
+    },
+
+    /**
+     * 获取省市县列表
+     * @param picker
+     * @param value
+     * @param index
+     */
+    onAreaChange(picker, value, index) {
+      if (index < 2) {
+        this.getAreaList(index + 1, value[index].code);
+      }
+    },
+    async getRegionList(pid = 0, type = 0) {
+      const { data } = await this.$apis.regionList(pid);
+      this.areaListObj[type] = data;
+      const result = {};
+      data.forEach(m => {
+        result[m.id] = m.name;
+      });
+      return result;
+    },
+    async getAreaList(i = 0, pid = 0) {
+      const type = this.areaType[i];
+      this.areaList[type] = await this.getRegionList(pid, i);
+      if (i < 2 && this.areaList[type] != {}) {
+        pid = this.areaListObj[i][0]["id"];
+        this.getAreaList(i + 1, pid);
+      }
+    },
+    //获取省市县
+    onAreaConfirm(values) {
+      this.addressInfo = values.map(item => item.name).join("");
+      this.showArea = false;
+    },
+    /**
+     * 添加用户地址
+     * @returns {Promise<void>}
+     */
+    async addUser() {
+      const _data = {
+        // realName: this.realName,
+        // mobile: this.mobile,
+        // addressInfo: this.addressInfo+this.addressDetail,
+        // regionId: 120103
+      };
+      const { data } = await this.$apis.addUser(_data);
+    },
+    onSubmit(values) {
+      console.log("submit", values);
+    },
+    /**
+     * 用户列表刷新
+     */
+    updateBs() {
+      this.$nextTick(() => {
         setTimeout(() => {
-          this.$toast('刷新成功');
-          this.isLoading = false;
-          this.count++;
-        }, 1000);
-      },
-      searchUser(){
-        if(this.searching) return;
-        this.searching = true;
-        setTimeout(()=>{
-          this.getUsers();
-          this.searching = false;
-        },500)
-      },
-      onAreaConfirm(values) {
-        this.addressInfo = values.map((item) => item.name).join('');
-        this.showArea = false;
-      },
-    },
-
-  };
-
+          if (this.bs) {
+            this.bs.refresh();
+          }
+        }, 300);
+      });
+    }
+  }
+};
 </script>
-<style>
-    .search-list{
-        transition: all 0.5s ease-in-out;
-        height: 30px;
-        width: 90%;
-        margin: 10px 20px;
-        border: 1px solid #eee;
-        border-radius: 4px;
-        overflow: hidden;
-    }
-    .search-list.show{
-        width: 90%;
-        height: 150px;
-    }
+<style scoped lang="scss">
+.container {
+  /*background-color: #f7f8fa;*/
+}
+.search-list {
+  transition: all 0.5s ease-in-out;
+  height: 30px;
+  width: 90%;
+  margin: 10px 20px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.search-list.show {
+  width: 90%;
+  height: 150px;
+}
+.user-item.active::after {
+  border: 1px solid #1989fa;
+}
+
+.address {
+  margin-bottom: 0;
+}
+
+.address-list {
+  padding: 0px 30px;
+  border-bottom: 1px solid #eeeeee;
+  overflow: hidden;
+  text-align: left;
+  background: #eee;
+  transition: all 0.5s ease-in-out;
+  max-height: 200px;
+  overflow-y: scroll;
+  min-height: 46px;
+  .van-tag {
+    margin: 10px 0;
+  }
+  .van-tag:not(:last-child) {
+    margin-right: 10px;
+  }
+}
+
+.address-item.active {
+  background-color: #1989fa;
+  color: #fff;
+}
+
+.address-empty {
+  width: 100%;
+  height: 46px;
+}
 </style>

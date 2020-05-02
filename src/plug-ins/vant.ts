@@ -46,3 +46,7 @@ Vue.use(Area);
 
 import { Popup } from 'vant';
 Vue.use(Popup);
+
+
+import { Tag } from 'vant';
+Vue.use(Tag);

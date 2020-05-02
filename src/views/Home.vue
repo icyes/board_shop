@@ -10,6 +10,8 @@
               </van-col>
           </van-row>
       </div>
+      <van-divider />
+
 
   </div>
 </template>
