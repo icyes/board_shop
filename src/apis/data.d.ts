@@ -1,4 +1,4 @@
-export interface addUserProps {
+export interface AddUserProps {
     realName:string,
     mobile:string,
     addressInfo:string,

@@ -53,9 +53,13 @@
         >用户地址</van-divider
       >
 
-      <div class="address-list">
+      <div
+        class="address-list"
+        @click="onMask"
+        :class="!loading.newTag ? '' : 'new-tag-input-mask'"
+      >
         <van-tag
-          @click="onAddressItem(index)"
+          @click.stop="onAddressItem(index)"
           class="address-item"
           :class="index == curAddressIdx ? 'active' : ''"
           v-for="(item, index) in address"
@@ -65,9 +69,30 @@
           type="primary"
           >{{ item.addName }}</van-tag
         >
+        <van-tag v-if="curUserIdx" class="add-tag" :class="{'active':curAddressIdx==-1,'show':loading.newTag}" size="large" plain type="success">
+          <div
+            class="new-tag-btn"
+            v-if="!loading.newTag"
+            @click.stop="onNewTag"
+          >
+              <template v-if="!addName">
+                  <van-icon name="add" style="margin: 1px 4px 0 0 " />
+                  <span>新标签</span>
+              </template>
+              <template v-else>
+                  <span @click.stop="curAddressIdx=-1">{{addName}}</span>
+                  <van-icon @click.stop="onNewTag" name="edit" style="margin: 0px 0px 0 4px " />
+              </template>
+
+          </div>
+          <div class="new-tag-input" v-else>
+            <input v-model="addName"  @click.stop="()=>false" placeholder="新标签名" /><van-icon @click.stop="addName=''" class="clear" name="clear" />
+          </div>
+        </van-tag>
+
         <van-row
           :class="
-            !loading.address && (!address || address.length == 0)
+            !curUserIdx&&!loading.address && (!address || address.length == 0)
               ? ''
               : 'hidden'
           "
@@ -101,7 +126,7 @@
       />
       <van-field
         readonly
-        v-model="userForm.addressInfo"
+        v-model="userForm.area"
         clickable
         name="area"
         label="收货地址"
@@ -118,7 +143,7 @@
       </van-popup>
       <van-field
         type="address"
-        v-model="userForm.addressDetail"
+        v-model="userForm.addressInfo"
         label="详细地址"
         name="addressDetail"
         placeholder="请填写详细地址"
@@ -144,6 +169,7 @@
 export default {
   data() {
     return {
+      addName:undefined,
       title: "",
       keyWord: "",
       curUserIdx: undefined,
@@ -153,16 +179,19 @@ export default {
       userForm: {
         realName: undefined,
         mobile: undefined,
-        addressDetail: undefined,
+        area: undefined,
         addressInfo: undefined,
         regionId: undefined
       },
       loading: {
         search: false,
-        address: false
+        address: false,
+        newTag: false,
+        addUser:false
       },
       showArea: false,
-      areaListObj: [[], [], []],
+      areaListArr: [[], [], []],
+      curAreaArr:[{},{},{}],
       areaType: ["province_list", "city_list", "county_list"],
       areaList: {
         "province_list": {},
@@ -198,17 +227,19 @@ export default {
         loading.search = false;
       }, 500);
     },
-    userClear: function () {
-      this.curUserIdx =undefined;
+    userClear: function() {
+      this.curUserIdx = undefined;
       this.address = undefined;
-      this.curAddressIdx =undefined;
+      this.curAddressIdx = undefined;
+      this.loading.newTag = false;
+      this.addName =undefined;
     },
     async getUsers() {
       this.curUserIdx = undefined;
-      if(!this.keyWord){
+      if (!this.keyWord) {
         this.userClear();
         this.users = undefined;
-        return
+        return;
       }
       const { data } = await this.$apis.searchUser(this.keyWord);
       this.users = data;
@@ -228,24 +259,35 @@ export default {
       this.loading.address = false;
     },
     onUserItem(index) {
-      this.curAddressIdx =undefined;
+      //初始化
+      this.curAddressIdx = undefined;
       this.userForm.addressInfo = undefined;
+      this.userForm.area = undefined;
+      this.addName = undefined;
+
       this.curUserIdx = index;
       const user = this.users[index];
-      this.userForm.mobile = user.mobile;
-      this.userForm.realName = user.realName;
       this.getAddress(user.userId);
     },
-    onAddressItem(index) {
+    async onAddressItem(index) {
       this.curAddressIdx = index;
-      const {regionId} = this.address[index];
-      this.getRegionInfo(regionId)
+      const { regionId, addressInfo,mobile,receiver } = this.address[index];
+
+      // 当前收件人信息
+      const {allName,cityId,provinceId,areaId,provinceName,cityName,areaName} = await this.getRegionInfo(regionId);
+      //当前地区
+      this.curAreaArr=[{code:provinceId,name:provinceName},{code:cityId,name:cityName},{code:areaId,name:areaName}]
+      this.userForm.addressInfo = addressInfo;
+      this.userForm.area = allName;
+      this.userForm.regionId = regionId;
+      this.userForm.mobile = mobile;
+      this.userForm.realName = receiver;
     },
 
     //地区详情
     async getRegionInfo(regionId) {
       const { data } = await this.$apis.regionInfo(regionId);
-      this.userForm.addressInfo = data.allName;
+      return data;
     },
 
     /**
@@ -261,7 +303,7 @@ export default {
     },
     async getRegionList(pid = 0, type = 0) {
       const { data } = await this.$apis.regionList(pid);
-      this.areaListObj[type] = data;
+      this.areaListArr[type] = data;
       const result = {};
       data.forEach(m => {
         result[m.id] = m.name;
@@ -272,13 +314,15 @@ export default {
       const type = this.areaType[i];
       this.areaList[type] = await this.getRegionList(pid, i);
       if (i < 2 && this.areaList[type] != {}) {
-        pid = this.areaListObj[i][0]["id"];
+        pid = this.areaListArr[i][0]["id"];
         this.getAreaList(i + 1, pid);
       }
     },
     //获取省市县
     onAreaConfirm(values) {
-      this.addressInfo = values.map(item => item.name).join("");
+      this.curAreaArr = values;
+      this.userForm.regionId = Number(values[2].code);
+      this.userForm.area = values.map(item => item.name).join(",");
       this.showArea = false;
     },
     /**
@@ -286,16 +330,36 @@ export default {
      * @returns {Promise<void>}
      */
     async addUser() {
-      const _data = {
-        // realName: this.realName,
-        // mobile: this.mobile,
-        // addressInfo: this.addressInfo+this.addressDetail,
-        // regionId: 120103
-      };
-      const { data } = await this.$apis.addUser(_data);
+      if(this.loading.addUser) return ;
+      this.loading.addUser = true
+      const _data = { ...this.userForm };
+      const rep = await this.$apis.addUser(_data).finally(res=>{
+        this.loading.addUser = false;
+      });
+      if(!rep) return ;
+      this.$notify({type:'success ',message:rep.msg});
+      this.resetSubmit();
     },
-    onSubmit(values) {
-      console.log("submit", values);
+    resetSubmit: function () {
+      this.userClear();
+      this.users = undefined;
+      this.keyWord = ""
+      this.resetForm();
+    },
+    resetForm(){
+      this.userForm= {
+        realName: undefined,
+          mobile: undefined,
+          area: undefined,
+          addressInfo: undefined,
+          regionId: undefined
+      }
+    },
+    async onSubmit(values) {
+      if(this.curAddressIdx == -1){
+        await this.addNewAddress()
+      }
+      this.addUser();
     },
     /**
      * 用户列表刷新
@@ -308,6 +372,37 @@ export default {
           }
         }, 300);
       });
+    },
+    /**
+     * 添加新地址
+     */
+    onMask(){
+      this.loading.newTag = false;
+      if(this.addName)this.curAddressIdx = -1
+      else this.curAddressIdx = undefined
+    },
+    onNewTag(){
+      this.loading.newTag = true;
+      this.curAddressIdx = undefined
+    },
+    async addNewAddress(){
+        const {regionId,addressInfo,area,mobile,realName} = this.userForm
+        const {userId} = this.users[this.curUserIdx]
+        const  region = this.curAreaArr;
+        const _data= {
+          userId,
+          addName:this.addName,
+          receiver:realName,
+          mobile,
+          country:region[2].code,
+          province:region[0].code,
+          city:region[1].code,
+          area,
+          addressInfo,
+          regionId,
+        }
+        const {data} = await this.$apis.addAddress(_data)
+        return data ;
     }
   }
 };
@@ -363,5 +458,60 @@ export default {
 .address-empty {
   width: 100%;
   height: 46px;
+}
+
+.add-tag{
+    position: relative;
+    bottom: -2px;
+    z-index: 3;
+    &.show{
+        bottom: 2px;
+    }
+    &.active{
+        background: #07c160;
+        color: #fff;
+    }
+}
+.new-tag-btn {
+  display: inline-flex;
+  align-items: center;
+}
+
+.new-tag-input {
+    display: flex;
+    align-items: center;
+  width: 55px;
+  height: 26px;
+  input {
+    border: none;
+    width: 100%;
+    height: 100%;
+    color: #333;
+    z-index: 3;
+  }
+    .clear{
+        position: absolute;
+        font-size: 18px;
+        right: -30px;
+        color: #fff;
+    }
+}
+.new-tag-input-mask{
+    /*pointer-events: none;*/
+}
+.new-tag-input-mask::after{
+    content: "";
+    position: fixed ;
+    top: 0 ;
+    left: 0 ;
+    width: 100% ;
+    height: 100% ;
+    background: rgba(0,0,0,0.3);
+    z-index: 2;
+    transform:unset;
+    .add-tag{
+        z-index: 3;
+    }
+    pointer-events: auto;
 }
 </style>

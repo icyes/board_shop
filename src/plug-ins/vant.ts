@@ -50,3 +50,6 @@ Vue.use(Popup);
 
 import { Tag } from 'vant';
 Vue.use(Tag);
+
+import { Icon } from 'vant';
+Vue.use(Icon);
