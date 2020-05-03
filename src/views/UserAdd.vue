@@ -69,7 +69,7 @@
           type="primary"
           >{{ item.addName }}</van-tag
         >
-        <van-tag v-if="curUserIdx" class="add-tag" :class="{'active':curAddressIdx==-1,'show':loading.newTag}" size="large" plain type="success">
+        <van-tag v-if="curUserIdx !=undefined" class="add-tag" :class="{'active':curAddressIdx==-1,'show':loading.newTag}" size="large" plain type="success">
           <div
             class="new-tag-btn"
             v-if="!loading.newTag"
@@ -83,7 +83,6 @@
                   <span @click.stop="curAddressIdx=-1">{{addName}}</span>
                   <van-icon @click.stop="onNewTag" name="edit" style="margin: 0px 0px 0 4px " />
               </template>
-
           </div>
           <div class="new-tag-input" v-else>
             <input v-model="addName"  @click.stop="()=>false" placeholder="新标签名" /><van-icon @click.stop="addName=''" class="clear" name="clear" />
@@ -360,7 +359,7 @@ export default {
       }
     },
     async onSubmit(values) {
-      if(!this.curAddressIdx){
+      if(this.curAddressIdx == undefined){
         this.$notify({type:'danger',message:'请选择地址标签，或新建一个标签'})
         return
       }
