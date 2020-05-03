@@ -200,9 +200,9 @@ export default {
       }
     };
   },
+
   created() {
-    const { title } = this.$route.meta;
-    if (title) this.title = title;
+    this.getRouteTitle();
     this.getAreaList();
   },
   mounted() {
@@ -214,6 +214,10 @@ export default {
     if (this.bs) this.bs.destroy();
   },
   methods: {
+    getRouteTitle: function () {
+      const {title} = this.$route.meta;
+      if (title) this.title = title;
+    },
     /**
      * 用户搜索
      */
@@ -356,6 +360,10 @@ export default {
       }
     },
     async onSubmit(values) {
+      if(!this.curAddressIdx){
+        this.$notify({type:'danger',message:'请选择地址标签，或新建一个标签'})
+        return
+      }
       if(this.curAddressIdx == -1){
         await this.addNewAddress()
       }
