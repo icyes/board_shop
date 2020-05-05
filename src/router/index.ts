@@ -7,22 +7,35 @@ Vue.use(VueRouter)
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue')
+    component: () => import('../views/Home.vue'),
+      meta: {
+          title: '板材网店'
+      },
   },
   {
     path: '/order/add',
     name: 'order_add',
-    component: () => import('../views/OrderAdd.vue')
+    component: () => import('../views/OrderAdd.vue'),
+      meta: {
+          title: '发货单-录入品名'
+      }
   },
   {
       path: '/order/info',
       name: 'order_info',
-      component: () => import('../views/OrderInfo.vue')
+      component: () => import('../views/OrderInfo.vue'),
+      meta: {
+          title: '发货单信息'
+      }
+
   },
   {
-      path: '/goods/add',
-      name: 'goods_add',
-      component: () => import('../views/GoodsAdd.vue')
+      path: '/user/add',
+      name: 'user_add',
+      component: () => import('../views/UserAdd.vue'),
+      meta: {
+          title: '发货单-填写用户信息'
+      }
   }
 ]
 

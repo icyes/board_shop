@@ -3,6 +3,7 @@
  * 更详细的 api 文档: https://github.com/umijs/umi-request
  */
 import { extend } from 'umi-request';
+import { Notify } from 'vant';
 const baseUrl = process.env.VUE_APP_BASE_URL;
 const codeMessage = {
     200: '服务器成功返回请求的数据。',
@@ -26,15 +27,7 @@ const codeMessage = {
  * 异常处理程序
  */
 const errorHandler = (error:any) => {
-    const { response = {} }= error;
-    // @ts-ignore
-    let errortext = codeMessage[response.status] || response.statusText;
-    const { status } = response;
-    // console.log(`response${JSON.stringify(response)}`)
-    if (status === 400 && !window.sessionStorage.getItem('token')) {
-        errortext = '账户名或密码错误'
-    }
-    return error
+    console.log(`error -->`, error)
 };
 
 /**
@@ -59,7 +52,16 @@ request.interceptors.request.use((url, options:any) => {
 
 // response拦截器, 处理response
 request.interceptors.response.use(async(response) => {
-    return response
+    const data = await response.clone().json();
+
+    return  new Promise<Response>((resolve,reject) =>{
+        if(data&&data.ret != 0){
+            Notify({type: 'danger', message:data.msg});
+            reject(data)
+        }else{
+            resolve(data)
+        }
+    } )
 });
 
 export default request;
