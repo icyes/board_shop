@@ -32,11 +32,11 @@
         </van-row>
 
         <van-divider style="margin-top: 30px" />
-        <van-field required readonly right-icon="arrow"  label="商品" placeholder="请选择"/>
-        <van-field required readonly right-icon="arrow" label="规格" placeholder="请选择"/>
+        <van-field required readonly right-icon="arrow"  label="类目" placeholder="选择类目" @click="queryCategory"/>
+        <van-field required readonly right-icon="arrow"  label="商品" placeholder="选择商品"/>
+        <van-field required readonly right-icon="arrow" label="规格" placeholder="选择属性"/>
         <van-field required  label="数量" type="number" placeholder="请输入"/>
         <van-button class="submit" type="info" block>确定</van-button>
-
     </div>
 </template>
 
@@ -64,6 +64,14 @@ export default {
     },
     removePy(i){
       this.commodity.splice(i,1)
+    },
+    //这里要展示一个树的控件,只能选择叶子节点
+    queryCategory(){
+        console.log("查询商品类目");
+    },
+    //根据上面选择的类目查询商品
+    queryProduct(cid){
+        console.log("根据上面选择的类目查询商品");
     }
   }
 };
