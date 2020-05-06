@@ -4,7 +4,7 @@
                 :title="title"
                 left-text="返回"
                 left-arrow
-                @click-left="$router.go(-1)"
+                @click-left="$emit('close')"
         />
     </div>
 </template>
@@ -29,10 +29,11 @@
     .goods-list{
         position: fixed;
         top: 0;
-        left: 0;
+        left: 1000px;
         z-index: 10;
         width: 100%;
         height: 100%;
         background: #fff;
+        transition: all 0.5s ease-in-out;
     }
 </style>

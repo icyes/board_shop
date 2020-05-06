@@ -24,6 +24,9 @@ const apis = {
     //商品分类列表
     category:async ()=>request('/api/product/category.do'), 
 
+    //修改地址
+    updateAddress:async (data:AddUserAddress)=> request('/api/user/updateAddress.do',{data,method:'post'}),
+
     //根据类目查询当前类目下商品
     productList:async (cid:number)=> request('/api/product/list.do',{data:{cid},method:'post'}),
 
