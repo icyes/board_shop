@@ -1,5 +1,5 @@
 <template>
-    <div class="goods-list">
+    <div class="fixed-container">
         <van-nav-bar
                 :title="title"
                 left-text="返回"
@@ -17,23 +17,12 @@
         title:'商品列表'
       }
     },
-    created() {
-      this.$apis.category().then(res=>{
-        console.log(res);
-      })
+    methods:{
+
     }
   }
 </script>
 
 <style scoped>
-    .goods-list{
-        position: fixed;
-        top: 0;
-        left: 1000px;
-        z-index: 10;
-        width: 100%;
-        height: 100%;
-        background: #fff;
-        transition: all 0.5s ease-in-out;
-    }
+
 </style>

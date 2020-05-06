@@ -60,3 +60,7 @@ Vue.use(Sku);
 
 import { TreeSelect } from 'vant';
 Vue.use(TreeSelect);
+
+import { Collapse, CollapseItem } from 'vant';
+Vue.use(Collapse);
+Vue.use(CollapseItem);
