@@ -57,3 +57,6 @@ Vue.use(Card);
 
 import { Sku } from 'vant';
 Vue.use(Sku);
+
+import { TreeSelect } from 'vant';
+Vue.use(TreeSelect);

@@ -1,8 +1,7 @@
 import request from "@/request"
 import { AddUserProps,AddUserAddress,QuerySkuInfo,OrderBookForm} from './data'
 const apis = {
-    //商品分类列表
-    category:async ()=>request('/api/product/category.do'),
+
 
     //用户名称和手机号查询用户
     searchUser:async (name:any)=>request('/api/user/search.do',{data:{name},method:'post'}),
@@ -21,6 +20,9 @@ const apis = {
 
     //增加客户地址
     addAddress:async (data:AddUserAddress)=> request('/api/user/addAddress.do',{data,method:'post'}),
+
+    //商品分类列表
+    category:async ()=>request('/api/product/category.do'), 
 
     //根据类目查询当前类目下商品
     productList:async (cid:number)=> request('/api/product/list.do',{data:{cid},method:'post'}),

@@ -37,6 +37,9 @@
         <van-field required  label="数量" type="number" placeholder="请输入"/>
         <van-button class="submit" type="info" block>确定</van-button>
 
+        <goods-list></goods-list>
+
+
     </div>
 </template>
 
@@ -50,6 +53,9 @@ export default {
       comItem
     ]
   }),
+  components:{
+    GoodsList:(resolve)=>{require(["./GoodsList"],resolve)}
+  },
   created() {
     this.getRouteTitle();
   },
