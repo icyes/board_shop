@@ -64,3 +64,4 @@ Vue.use(TreeSelect);
 import { Collapse, CollapseItem } from 'vant';
 Vue.use(Collapse);
 Vue.use(CollapseItem);
+

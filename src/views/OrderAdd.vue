@@ -32,8 +32,8 @@
         </van-row>
 
         <van-divider style="margin-top: 30px" />
-        <van-field @click="queryCategory" required readonly right-icon="arrow"  label="类目" placeholder="选择类目" />
-        <van-field @click="showModal = 'goods'" required readonly right-icon="arrow"  label="商品" placeholder="选择商品"/>
+        <van-field :value="curCate.cateName" @click="queryCategory" required readonly right-icon="arrow"  label="类目" placeholder="选择类目" />
+        <van-field  @click="queryProduct" required readonly right-icon="arrow"  label="商品" placeholder="选择商品"/>
         <van-field required readonly right-icon="arrow" label="规格" placeholder="选择属性"/>
         <van-field required  label="数量" type="number" placeholder="请输入"/>
         <van-button class="submit" type="info" block>确定</van-button>
@@ -52,7 +52,7 @@ export default {
     title:'',
     showModal:'',
     //当前选择分类
-    curCate:undefined,
+    curCate:{},
     category:[],
     commodity:[
       comItem
@@ -89,7 +89,11 @@ export default {
     },
     //根据上面选择的类目查询商品
     queryProduct(cid){
-        console.log("根据上面选择的类目查询商品");
+      if(this.curCate.id == undefined) {
+        this.$toast('请先选择分类 ');
+        return
+      }
+      this.showModal = 'goods'
     },
     onCategoryItem(item){
        this.curCate = item
