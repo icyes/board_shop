@@ -6,7 +6,7 @@
                 left-arrow
                 @click-left="$emit('close')"
         />
-        <category-tree :tree="category" @select="onSelect"></category-tree>
+        <category-tree :current="current" :tree="category" @select="onSelect"></category-tree>
     </div>
 </template>
 
@@ -14,18 +14,14 @@
   export default {
     name: "Category",
     data(){
-      return{
-        activeNames:{
-          1:[],
-          2:[]
-        },
-      }
+      return{}
     },
     props:{
       category:{
         type:Array,
         default:()=>[]
-      }
+      },
+      current:{}
     },
     components:{
       CategoryTree:(resolve => require(['./CategoryTree'],resolve))

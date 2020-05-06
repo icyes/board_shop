@@ -32,14 +32,14 @@
         </van-row>
 
         <van-divider style="margin-top: 30px" />
-        <van-field :value="curCate.cateName" @click="queryCategory" required readonly right-icon="arrow"  label="类目" placeholder="选择类目" />
+        <van-field :value="curCategory.cateName" @click="queryCategory" required readonly right-icon="arrow"  label="类目" placeholder="选择类目" />
         <van-field  @click="queryProduct" required readonly right-icon="arrow"  label="商品" placeholder="选择商品"/>
         <van-field required readonly right-icon="arrow" label="规格" placeholder="选择属性"/>
         <van-field required  label="数量" type="number" placeholder="请输入"/>
         <van-button class="submit" type="info" block>确定</van-button>
 
         <goods-list  :class="showModal == 'goods'?'show-modal':''" @close="showModal= ''"></goods-list>
-        <category-list :category="category" :class="showModal == 'category'?'show-modal':''" @close="showModal= ''" @select="onCategoryItem"></category-list>
+        <category-list :current="curCategory" :category="category" :class="showModal == 'category'?'show-modal':''" @close="showModal= ''" @select="onCategoryItem"></category-list>
     </div>
 </template>
 
@@ -51,8 +51,8 @@ export default {
   data: () => ({
     title:'',
     showModal:'',
-    //当前选择分类
-    curCate:{},
+    //当前选择的分类
+    curCategory:{},
     category:[],
     commodity:[
       comItem
@@ -89,14 +89,14 @@ export default {
     },
     //根据上面选择的类目查询商品
     queryProduct(cid){
-      if(this.curCate.id == undefined) {
+      if(this.curCategory.id == undefined) {
         this.$toast('请先选择分类 ');
         return
       }
       this.showModal = 'goods'
     },
     onCategoryItem(item){
-       this.curCate = item
+       this.curCategory = item
       this.showModal =''
     }
   }
