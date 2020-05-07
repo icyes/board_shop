@@ -18,8 +18,7 @@
     },
     props:{
       category:{
-        type:Array,
-        default:()=>[]
+        type:Object
       },
       current:{}
     },

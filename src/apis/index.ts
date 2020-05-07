@@ -31,12 +31,12 @@ const apis = {
     productList:async (cid:number)=> request('/api/product/list.do',{data:{cid},method:'post'}),
 
     //根据商品查询当前销售的属性(查询出来可能是多个属性和多个值,再这个值区查询单品的价格和库存)
-    productAttrList:async (productId:number)=> request('/api/product/attrList.do',{data:{productId},method:'post'}),
+    productAttrList:async (productId:number)=> request('/api/product/attrList.do',{data:{id:productId},method:'post'}),
 
     //根据类目ID和商品ID以及销售属性名和值ID查询单品信息
-    productSkuInfo:async (data:QuerySkuInfo)=> request('/api/product/skuInfo.do',{data,method:'post'}),
+        productSkuInfo:async (data:QuerySkuInfo)=> request('/api/product/skuInfo.do',{data,method:'post'}),
 
-    //根据类目ID和商品ID以及销售属性名和值ID查询单品信息
+    //提交商品订单
     orderBook:async (data:OrderBookForm)=> request('/api/order/book.do',{data,method:'post'}),
 };
 

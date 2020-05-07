@@ -65,3 +65,6 @@ import { Collapse, CollapseItem } from 'vant';
 Vue.use(Collapse);
 Vue.use(CollapseItem);
 
+
+import { Stepper } from 'vant';
+Vue.use(Stepper)
