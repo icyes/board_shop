@@ -42,7 +42,7 @@
                 </div>
             </template>
         </van-field>
-        <van-button class="submit" type="info" block>确定</van-button>
+        <van-button @click="submit" class="submit" type="info" block>确定</van-button>
 
         <goods-list @select="onGoodsItem" :current="curGoods" :goods="goods"  :class="showModal == 'goods'?'show-modal':''" @close="showModal= ''"></goods-list>
         <category-list  @select="onCategoryItem" :current="curCategory" :category="category" :class="showModal == 'category'?'show-modal':''" @close="showModal= ''" ></category-list>
@@ -54,8 +54,7 @@
                 :goods="skuGoods"
                 :initialSku="initialSku"
                 :preview-on-click-image="false"
-                :quota-used="10"
-                :start-sale-num="0"
+                :close-on-click-overlay="true"
                 @buy-clicked="skuConfirm"
                 @sku-selected="skuSelected"
                 buy-text="确认"
@@ -86,7 +85,7 @@
 <script>
   import {buildTree} from "@/utils"
   const comItem = {name:'',spec:'',unit:'',num:'',unitPrice:'',sumPrice:''}
-  const oldJosnProp = {pidArr:[],vidArr:[],skuName:[],skuValue:[],pid:0,vid:0};
+  const oldJosnProp = {pidArr:[],vidArr:[],skuName:[],skuValue:[],pid:undefined,vid:undefined};
 export default {
   name: "Order",
   data: () => ({
@@ -161,17 +160,23 @@ export default {
       })
       this.showModal = 'goods'
     },
-    getSkuInfo: function (value) {
-
+    getSkuInfo: async function (value) {
+      const pidArr=value.pidArr.sort((a,b)=>a-b),vidArr=[];
+      pidArr.forEach(m=>{
+        vidArr.push(value[m])
+      })
       const _data ={
         cid:this.curCategory.id,
         productId:this.curGoods.id,
         //1,2,3
-        pidArr:value.pidArr.join(','),
+        pidArr:pidArr.join(','),
         //4,5,6
-        vidArr:value.vidArr.join(',')
+        vidArr:vidArr.join(',')
       }
-      this.$apis.productSkuInfo(_data)
+      const {quantity,price} = await this.$apis.productSkuInfo(_data);
+      value['stock_num'] = quantity||0;
+      value['price'] = price||0;
+
     },
     getSkuTree: function (data) {
       const result = [];
@@ -201,6 +206,7 @@ export default {
             pid:m.pid
           }
         json[m.pid+''] = m.vid;
+        if(oldJosn.pid!=undefined)
         json[oldJosn.pid] = oldJosn.vid;
         json['pidArr']=[m.pid,...oldJosn.pidArr];
         json['vidArr']=[m.vid,...oldJosn.vidArr];
@@ -273,7 +279,7 @@ export default {
     skuConfirm(value){
       console.log(`skuConfirm -->`, value)
       const {selectedSkuComb:sku,selectedNum} = value;
-      sku.skuString = sku.skuValue.reverse().join(',')
+      sku.skuString = sku.skuValue.reverse().join(';')
       this.curSku =sku;
       this.initialSku = sku;
       this.num = selectedNum;
@@ -281,13 +287,26 @@ export default {
     },
     //sku切换时的回调
     skuSelected(value){
-      console.log(`skuSelected -->`, value)
-      // this.getSkuInfo(value.selectedSkuComb)
+      const {selectedSkuComb} = value;
+      if(selectedSkuComb)
+      this.getSkuInfo(value.selectedSkuComb)
     },
   //  计步器
     numChange(value){
       this.initialSku.selectedNum = value;
       this.$forceUpdate();
+    },
+    //添加订单
+    submit(){
+      const {uid,aid} = this.$route.params;
+      const {id:productId} =  this.curGoods;
+      const _data = {
+        userId:uid,
+        addressId:aid,
+        //[{productId:1,price:23.8}]
+        orderData:[{productId}]
+      }
+      this.$apis.orderBook(_data)
     }
   }
 };

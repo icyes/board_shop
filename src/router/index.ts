@@ -13,7 +13,7 @@ Vue.use(VueRouter)
       },
   },
   {
-    path: '/order/add',
+    path: '/order/add/:uid/:aid',
     name: 'order_add',
     component: () => import('../views/OrderAdd.vue'),
       meta: {

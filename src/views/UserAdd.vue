@@ -8,11 +8,16 @@
     />
     <van-search
       v-model="keyWord"
+      show-action
       shape="round"
       background="#fff"
       placeholder="请输入手机号/姓名"
       @input="searchUser"
-    />
+    >
+        <template #action>
+            <van-button round type="info" size="small">新增用户</van-button>
+        </template>
+    </van-search>
     <div
       ref="scroll"
       class="search-list"
@@ -109,28 +114,29 @@
     >
     <van-form @submit="onSubmit" :show-error="false">
       <van-field
+              disabled
         name="realName"
         v-model="userForm.realName"
         label="姓名"
-        placeholder="请填写客户姓名"
-        :rules="[{ required: true, message: '请填写客户姓名' }]"
+        placeholder="客户姓名"
+        :rules="[{ required: true, message: '请输入客户姓名' }]"
       />
       <van-field
+              disabled
         type="mobile"
         v-model="userForm.mobile"
         name="mobile"
         label="联系电话"
-        placeholder="请输入联系电话"
+        placeholder="联系电话"
         :rules="[{ required: true, message: '请填写联系电话' }]"
       />
       <van-field
+        disabled
         readonly
         v-model="userForm.area"
-        clickable
         name="area"
         label="收货地址"
-        placeholder="点击选择省市区"
-        @click="showArea = true"
+        placeholder="省市区"
       />
       <van-popup v-model="showArea" position="bottom">
         <van-area
@@ -142,22 +148,24 @@
       </van-popup>
       <van-field
         type="address"
+        disabled
         v-model="userForm.addressInfo"
         label="详细地址"
         name="addressDetail"
-        placeholder="请填写详细地址"
+        placeholder="详细地址"
         :rules="[{ required: true, message: '请填写详细地址' }]"
       />
       <div style="margin: 16px;">
         <van-row type="flex" justify="center">
           <van-button
             round
+            :disabled="curAddressIdx==undefined"
             block
             style="width:50%"
             type="info"
             native-type="submit"
           >
-            新增客户
+            添加订单
           </van-button>
         </van-row>
       </div>
@@ -363,10 +371,16 @@ export default {
         this.$notify({type:'danger',message:'请选择地址标签，或新建一个标签'})
         return
       }
-      if(this.curAddressIdx == -1){
-        await this.addNewAddress()
-      }
-      this.addUser();
+      // if(this.curAddressIdx == -1){
+      //   await this.addNewAddress()
+      // }
+      // this.addUser();
+
+      const {userId} = this.users[this.curUserIdx];
+      const {regionId} = this.address[this.curAddressIdx]
+
+      this.$router.push(`/order/add/${userId}/${regionId}`)
+
     },
     /**
      * 用户列表刷新
@@ -471,6 +485,7 @@ export default {
     position: relative;
     bottom: -2px;
     z-index: 3;
+    margin-right: 0 !important;
     &.show{
         bottom: 2px;
     }
