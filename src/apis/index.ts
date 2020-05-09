@@ -38,6 +38,9 @@ const apis = {
 
     //提交商品订单
     orderBook:async (data:OrderBookForm)=> request('/api/order/book.do',{data,method:'post'}),
+
+    //所有sku详情
+    spuSku: (productId:number) => request('/api/product/getProductSkuAll.do',{data:{productId},method:'post'})
 };
 
 export default apis

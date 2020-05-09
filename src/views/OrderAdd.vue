@@ -85,7 +85,7 @@
 <script>
   import {buildTree} from "@/utils"
   const comItem = {name:'',spec:'',unit:'',num:'',unitPrice:'',sumPrice:''}
-  const oldJosnProp = {pidArr:[],vidArr:[],skuName:[],skuValue:[],pid:undefined,vid:undefined};
+  const oldJosnProp = {pidArr:[],vidArr:[],skuName:[],skuValue:[],pid:undefined,vid:undefined,skuArr:[]};
 export default {
   name: "Order",
   data: () => ({
@@ -99,13 +99,14 @@ export default {
     curSku:{},
     initialSku:{},
     skuKey:false,
+    productSkuList:[],
     sku: {
       tree: [],
       list: [],
       "price": '0', // 默认价格（单位元）
-      "stock_num": 100, // 商品总库存
+      "stock_num": '1', // 商品总库存
       "none_sku": false, // 是否无规格商品
-      "hide_stock": false // 是否隐藏剩余库存
+      "hide_stock": true // 是否隐藏剩余库存
   },
     skuGoods: {
     // 默认商品 sku 缩略图
@@ -161,22 +162,17 @@ export default {
       this.showModal = 'goods'
     },
     getSkuInfo: async function (value) {
-      const pidArr=value.pidArr.sort((a,b)=>a-b),vidArr=[];
-      pidArr.forEach(m=>{
-        vidArr.push(value[m])
-      })
       const _data ={
         cid:this.curCategory.id,
         productId:this.curGoods.id,
         //1,2,3
-        pidArr:pidArr.join(','),
+        pidArr:value.pidArr.join(','),
         //4,5,6
-        vidArr:vidArr.join(',')
+        vidArr:value.vidArr.join(',')
       }
       const {quantity,price} = await this.$apis.productSkuInfo(_data);
       value['stock_num'] = quantity||0;
       value['price'] = price||0;
-
     },
     getSkuTree: function (data) {
       const result = [];
@@ -194,6 +190,24 @@ export default {
       })
       return result;
     },
+    // 整理sku信息
+    sortSkuArr: function (value) {
+      const pidArr = value.pidArr.sort((a, b) => a - b), vidArr = [];
+      pidArr.forEach(m => {
+        vidArr.push(value[m])
+      })
+      value.pidArr = pidArr;
+      value.vidArr = vidArr;
+      let skuKey = '';
+      pidArr.map((m,i)=>{
+        if(skuKey != '') skuKey+='_';
+        skuKey += m+'-'+vidArr[i];
+      })
+      value['skuKey'] = skuKey;
+      const  skuItem = this.productSkuList[skuKey];
+      value['stock_num'] = skuItem.quantity;
+      value['price'] = skuItem.price;
+    },
     //递归获取所有规格
     getListRecur(result,data,i,oldJosn=oldJosnProp){
      const items = data[i].items;
@@ -201,18 +215,20 @@ export default {
         const m = items[j];
         const json = {
             'price': 0, // 价格（单位分）
-            'stock_num': 100, // 当前 sku 组合对应的库存
+            'stock_num': 0, // 当前 sku 组合对应的库存
             vid:m.vid,
             pid:m.pid
           }
         json[m.pid+''] = m.vid;
         if(oldJosn.pid!=undefined)
         json[oldJosn.pid] = oldJosn.vid;
+        json['skuArr']=[m.pid+'-'+m.vid,...oldJosn.skuArr];
         json['pidArr']=[m.pid,...oldJosn.pidArr];
         json['vidArr']=[m.vid,...oldJosn.vidArr];
         json['skuName']=[m.pidName,...oldJosn.skuName];
         json['skuValue']=[m.vidName,...oldJosn.skuValue];
         if(i==data.length-1){
+          this.sortSkuArr(json)
           result.push(json);
         }else{
           this.getListRecur(result,data,i+1,json)
@@ -272,12 +288,26 @@ export default {
       this.resetForm();
     },
     onGoodsItem(item){
+      this.getSkusInfo(item.id)
       this.curGoods =item;
-      this.resetForm(['goods'])
+      this.resetForm(['goods']);
+
+    },
+    /**
+     获取sku
+     */
+    getSkusInfo(cid){
+       this.$apis.spuSku(cid).then(({data})=>{
+         const {productSkuList} = data;
+         const result = {};
+         productSkuList.forEach(m=>{
+            result[m.sku] = m;
+         })
+         this.productSkuList = result;
+       });
     },
     //sku确认选择
     skuConfirm(value){
-      console.log(`skuConfirm -->`, value)
       const {selectedSkuComb:sku,selectedNum} = value;
       sku.skuString = sku.skuValue.reverse().join(';')
       this.curSku =sku;
@@ -288,10 +318,8 @@ export default {
     //sku切换时的回调
     skuSelected(value){
       const {selectedSkuComb} = value;
-      if(selectedSkuComb)
-      this.getSkuInfo(value.selectedSkuComb)
     },
-  //  计步器
+   //  计步器
     numChange(value){
       this.initialSku.selectedNum = value;
       this.$forceUpdate();

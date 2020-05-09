@@ -165,7 +165,7 @@
             type="info"
             native-type="submit"
           >
-            添加订单
+            开单
           </van-button>
         </van-row>
       </div>
@@ -329,6 +329,7 @@ export default {
         this.getAreaList(i + 1, pid);
       }
     },
+
     //获取省市县
     onAreaConfirm(values) {
       this.curAreaArr = values;
@@ -424,7 +425,8 @@ export default {
         }
         const {data} = await this.$apis.addAddress(_data)
         return data ;
-    }
+    },
+
   }
 };
 </script>
