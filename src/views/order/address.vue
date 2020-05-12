@@ -15,7 +15,7 @@
       @input="searchUser"
     >
         <template #action>
-            <van-button round type="info" size="small">新增用户</van-button>
+            <van-button @click.native="showModal='userAdd'" type="info" size="small">新增用户</van-button>
         </template>
     </van-search>
     <div
@@ -25,7 +25,7 @@
     >
       <div>
         <van-cell
-          @click.native="onUserItem(index)"
+          @click.native="setCurUser(index)"
           v-for="(item, index) in users"
           :key="item.userId"
           class="user-item"
@@ -64,7 +64,7 @@
         :class="!loading.newTag ? '' : 'new-tag-input-mask'"
       >
         <van-tag
-          @click.stop="onAddressItem(index)"
+          @click.stop="setCurAddress(index)"
           class="address-item"
           :class="index == curAddressIdx ? 'active' : ''"
           v-for="(item, index) in address"
@@ -78,19 +78,10 @@
           <div
             class="new-tag-btn"
             v-if="!loading.newTag"
-            @click.stop="onNewTag"
+            @click="showAddressAdd"
           >
-              <template v-if="!addName">
                   <van-icon name="add" style="margin: 1px 4px 0 0 " />
                   <span>新标签</span>
-              </template>
-              <template v-else>
-                  <span @click.stop="curAddressIdx=-1">{{addName}}</span>
-                  <van-icon @click.stop="onNewTag" name="edit" style="margin: 0px 0px 0 4px " />
-              </template>
-          </div>
-          <div class="new-tag-input" v-else>
-            <input v-model="addName"  @click.stop="()=>false" placeholder="新标签名" /><van-icon @click.stop="addName=''" class="clear" name="clear" />
           </div>
         </van-tag>
 
@@ -104,72 +95,32 @@
           align="center"
           justify="center"
           class="text-grey font-df address-empty"
-          >{{ curUserIdx ? "暂时没有地址" : "请选择用户" }}</van-row
-        >
+          >{{ curUserIdx ? "暂时没有地址" : "请选择用户" }}</van-row>
       </div>
     </div>
 
     <van-divider content-position="center" style="margin-top: 20px"
       >用户信息</van-divider
     >
-    <van-form @submit="onSubmit" :show-error="false">
-      <van-field
-              disabled
-        name="realName"
-        v-model="userForm.realName"
-        label="姓名"
-        placeholder="客户姓名"
-        :rules="[{ required: true, message: '请输入客户姓名' }]"
-      />
-      <van-field
-              disabled
-        type="mobile"
-        v-model="userForm.mobile"
-        name="mobile"
-        label="联系电话"
-        placeholder="联系电话"
-        :rules="[{ required: true, message: '请填写联系电话' }]"
-      />
-      <van-field
-        disabled
-        readonly
-        v-model="userForm.area"
-        name="area"
-        label="收货地址"
-        placeholder="省市区"
-      />
-      <van-popup v-model="showArea" position="bottom">
-        <van-area
-          :area-list="areaList"
-          @change="onAreaChange"
-          @confirm="onAreaConfirm"
-          @cancel="showArea = false"
-        />
-      </van-popup>
-      <van-field
-        type="address"
-        disabled
-        v-model="userForm.addressInfo"
-        label="详细地址"
-        name="addressDetail"
-        placeholder="详细地址"
-        :rules="[{ required: true, message: '请填写详细地址' }]"
-      />
-      <div style="margin: 16px;">
-        <van-row type="flex" justify="center">
-          <van-button
-            round
-            :disabled="curAddressIdx==undefined"
-            block
-            style="width:50%"
-            type="info"
-            native-type="submit"
-          >
-            开单
-          </van-button>
-        </van-row>
-      </div>
-    </van-form>
+      <user-address-form disabled @submit="onNext" :userForm="userForm" >
+          <div slot="action" style="margin: 16px;">
+              <van-row type="flex" justify="center">
+                  <van-button
+                          round
+                          :disabled="curAddressIdx===undefined"
+                          block
+                          style="width:50%"
+                          type="info"
+                          native-type="submit"
+                  >
+                      开单
+                  </van-button>
+              </van-row>
+          </div>
+      </user-address-form>
+      <user-add :class="showModal === 'userAdd'?'show-modal':''"  @close="showModal=''"></user-add>
+      <order-add :class="showModal === 'orderAdd'?'show-modal':''" :userId="getUserId" :regionId="getRegionId" @close="showModal=''"></order-add>
+      <address-add :class="showModal === 'addressAdd'?'show-modal':''" @submitBack="getAddress"  @close="showModal=''" :userId="getUserId"></address-add>
   </div>
 </template>
 <script>
@@ -186,7 +137,6 @@ export default {
       userForm: {
         realName: undefined,
         mobile: undefined,
-        area: undefined,
         addressInfo: undefined,
         regionId: undefined
       },
@@ -196,21 +146,34 @@ export default {
         newTag: false,
         addUser:false
       },
-      showArea: false,
-      areaListArr: [[], [], []],
-      curAreaArr:[{},{},{}],
-      areaType: ["province_list", "city_list", "county_list"],
-      areaList: {
-        "province_list": {},
-        "city_list": {},
-        "county_list": {}
-      }
+      //展示哪个弹窗
+      showModal:'',
     };
+  },
+  computed:{
+    getUserId(){
+      if(this.curUserIdx!=undefined){
+        const {userId} = this.users[this.curUserIdx];
+        return userId
+      }else return  undefined;
+    },
+    getRegionId(){
+      if(this.curAddressIdx!=undefined){
+        const {regionId} = this.address[this.curAddressIdx]
+        return regionId
+      }else return  undefined;
+    }
+  },
+
+  components:{
+    UserAddressForm:resolve => require(['@/components/UserAddressForm'],resolve),
+    OrderAdd:resolve => require(['@/views/order/add'],resolve),
+    UserAdd:resolve => require(['@/components/UserAdd'],resolve),
+    AddressAdd:resolve => require(['@/components/AddressAdd'],resolve),
   },
 
   created() {
     this.getRouteTitle();
-    this.getAreaList();
   },
   mounted() {
     this.$nextTick(() => {
@@ -221,6 +184,9 @@ export default {
     if (this.bs) this.bs.destroy();
   },
   methods: {
+    showAddressAdd(){
+        this.showModal = 'addressAdd'
+    },
     getRouteTitle: function () {
       const {title} = this.$route.meta;
       if (title) this.title = title;
@@ -257,30 +223,38 @@ export default {
       this.updateBs();
     },
     /**
-     * 点击用户获取地址
+     * 根据用户获取地址
      * @param uid
      * @returns {Promise<void>}
      */
 
-    async getAddress(uid) {
+    async getAddress() {
+      if(this.curUserIdx == undefined) return ;
+      const user = this.users[this.curUserIdx];
       this.loading.address = true;
-      const { data } = await this.$apis.address(uid);
+      const { data } = await this.$apis.address(user.userId);
       this.address = data;
       await this.$sleep();
       this.loading.address = false;
     },
-    onUserItem(index) {
+    resetUserForm: function () {
+      for (const m in this.userForm) {
+        this.userForm[m] = ''
+      }
+    },
+    setCurUser(index) {
       //初始化
       this.curAddressIdx = undefined;
-      this.userForm.addressInfo = undefined;
-      this.userForm.area = undefined;
       this.addName = undefined;
 
       this.curUserIdx = index;
       const user = this.users[index];
-      this.getAddress(user.userId);
+      this.resetUserForm();
+      this.getAddress();
     },
-    async onAddressItem(index) {
+
+    //选取用户地址
+    async setCurAddress(index) {
       this.curAddressIdx = index;
       const { regionId, addressInfo,mobile,receiver } = this.address[index];
 
@@ -293,50 +267,10 @@ export default {
       this.userForm.regionId = regionId;
       this.userForm.mobile = mobile;
       this.userForm.realName = receiver;
+      this.$forceUpdate();
     },
 
-    //地区详情
-    async getRegionInfo(regionId) {
-      const { data } = await this.$apis.regionInfo(regionId);
-      return data;
-    },
 
-    /**
-     * 获取省市县列表
-     * @param picker
-     * @param value
-     * @param index
-     */
-    onAreaChange(picker, value, index) {
-      if (index < 2) {
-        this.getAreaList(index + 1, value[index].code);
-      }
-    },
-    async getRegionList(pid = 0, type = 0) {
-      const { data } = await this.$apis.regionList(pid);
-      this.areaListArr[type] = data;
-      const result = {};
-      data.forEach(m => {
-        result[m.id] = m.name;
-      });
-      return result;
-    },
-    async getAreaList(i = 0, pid = 0) {
-      const type = this.areaType[i];
-      this.areaList[type] = await this.getRegionList(pid, i);
-      if (i < 2 && this.areaList[type] != {}) {
-        pid = this.areaListArr[i][0]["id"];
-        this.getAreaList(i + 1, pid);
-      }
-    },
-
-    //获取省市县
-    onAreaConfirm(values) {
-      this.curAreaArr = values;
-      this.userForm.regionId = Number(values[2].code);
-      this.userForm.area = values.map(item => item.name).join(",");
-      this.showArea = false;
-    },
     /**
      * 添加用户地址
      * @returns {Promise<void>}
@@ -358,29 +292,13 @@ export default {
       this.keyWord = ""
       this.resetForm();
     },
-    resetForm(){
-      this.userForm= {
-        realName: undefined,
-          mobile: undefined,
-          area: undefined,
-          addressInfo: undefined,
-          regionId: undefined
-      }
-    },
-    async onSubmit(values) {
+    onNext(values) {
       if(this.curAddressIdx == undefined){
         this.$notify({type:'danger',message:'请选择地址标签，或新建一个标签'})
         return
       }
-      // if(this.curAddressIdx == -1){
-      //   await this.addNewAddress()
-      // }
-      // this.addUser();
 
-      const {userId} = this.users[this.curUserIdx];
-      const {regionId} = this.address[this.curAddressIdx]
-
-      this.$router.push(`/order/add/${userId}/${regionId}`)
+      this.showModal = 'orderAdd'
 
     },
     /**
@@ -407,24 +325,12 @@ export default {
       this.loading.newTag = true;
       this.curAddressIdx = undefined
     },
-    async addNewAddress(){
-        const {regionId,addressInfo,area,mobile,realName} = this.userForm
-        const {userId} = this.users[this.curUserIdx]
-        const  region = this.curAreaArr;
-        const _data= {
-          userId,
-          addName:this.addName,
-          receiver:realName,
-          mobile,
-          country:region[2].code,
-          province:region[0].code,
-          city:region[1].code,
-          area,
-          addressInfo,
-          regionId,
-        }
-        const {data} = await this.$apis.addAddress(_data)
-        return data ;
+
+
+    //查询用户的地区详情
+    async getRegionInfo(regionId) {
+      const { data } = await this.$apis.regionInfo(regionId);
+      return data;
     },
 
   }

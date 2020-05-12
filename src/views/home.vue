@@ -2,8 +2,8 @@
   <div class="container home">
       <div class="head">
           <van-row type="flex" justify="center">
-              <van-col :span="6" >
-                  <router-link to="user/add"><van-button type="info">开单</van-button></router-link>
+              <van-col :span="24" >
+                  <router-link to="order/address"><van-button class="shadow" block type="info">开单</van-button></router-link>
               </van-col>
           </van-row>
       </div>

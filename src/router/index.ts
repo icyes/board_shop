@@ -7,7 +7,7 @@ Vue.use(VueRouter)
   {
     path: '/',
     name: 'Home',
-    component: () => import('../views/Home.vue'),
+    component: () => import('../views/home.vue'),
       meta: {
           title: '板材网店'
       },
@@ -15,7 +15,7 @@ Vue.use(VueRouter)
   {
     path: '/order/add/:uid/:aid',
     name: 'order_add',
-    component: () => import('../views/OrderAdd.vue'),
+    component: () => import('../views/order/add.vue'),
       meta: {
           title: '发货单-录入品名'
       }
@@ -23,16 +23,16 @@ Vue.use(VueRouter)
   {
       path: '/order/info',
       name: 'order_info',
-      component: () => import('../views/OrderInfo.vue'),
+      component: () => import('../views/order/detail.vue'),
       meta: {
           title: '发货单信息'
       }
 
   },
   {
-      path: '/user/add',
-      name: 'user_add',
-      component: () => import('../views/UserAdd.vue'),
+      path: '/order/address',
+      name: 'order_address',
+      component: () => import('../views/order/address.vue'),
       meta: {
           title: '发货单-填写用户信息'
       }
