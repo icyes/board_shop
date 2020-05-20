@@ -90,6 +90,7 @@
         showSku:false,
         //当前选择的商品
         curGoods:{},
+        productSku:{}
       };
     },
 
@@ -162,7 +163,9 @@
         value['skuKey'] = skuKey;
         const  skuItem = this.productSkuList[skuKey];
         value['stock_num'] = skuItem.quantity;
-        value['price'] = skuItem.price;
+        value['price'] = skuItem.price*100;
+        value['id'] = skuItem.id;
+        value['detail'] = skuItem;
       },
       //递归获取所有规格
       getListRecur(result,data,i,oldJosn=oldJosnProp){
@@ -249,22 +252,24 @@
       },
       onGoodsItem(item){
         this.getSkusInfo(item.id)
-        this.curGoods =item;
+        this.curGoods ={...item};
+        console.log(`this.curGoods -->`, this.curGoods)
         this.resetForm(['goods','category']);
-
       },
       /**
        获取所有sku组合详情
        */
       getSkusInfo(cid){
         this.$apis.spuSku(cid).then(({data})=>{
-          const {productSkuList} = data;
+          const {productSkuList,unitName} = data;
+          this.productSku = data;
           const result = {};
           let stockNum = 0;
           productSkuList.forEach(m=>{
             result[m.sku] = m;
             stockNum += m.quantity
           })
+          this.curGoods['unitName'] = unitName;
           this.sku['stock_num']= stockNum;
           this.productSkuList = result;
         });
@@ -292,20 +297,12 @@
         const data = {
             categoray:{...this.curCategory},
             goods:{...this.curGoods,num:this.num},
-            sku:{...this.curSku}
+            sku:{...this.curSku},
+            productSku:this.productSku
         }
         this.$emit('add',data);
         this.$emit('close');
         this.resetForm();
-        // const {uid,aid} = this.$route.params;
-        // const {id:productId} =  this.curGoods;
-        // const _data = {
-        //   userId:uid,
-        //   addressId:aid,
-        //   //[{productId:1,price:23.8}]
-        //   orderData:[{productId}]
-        // }
-        // this.$apis.orderBook(_data)
       }
     },
     components:{
