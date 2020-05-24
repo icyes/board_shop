@@ -219,7 +219,7 @@ export default {
         return;
       }
       const { data } = await this.$apis.searchUser(this.keyWord);
-      this.users = data;
+      this.users = data||[];
       this.updateBs();
     },
     /**

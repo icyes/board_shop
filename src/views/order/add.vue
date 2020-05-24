@@ -23,7 +23,6 @@
     </van-cell>
     <van-empty
       v-if="commodity && commodity.length === 0"
-      image="error"
       description="暂无商品"
     />
     <template v-else>
@@ -36,8 +35,11 @@
         :title="item.title"
       >
         <template #footer>
-          <van-button size="mini">编辑</van-button>
-          <van-button size="mini">删除</van-button>
+            <van-row class="goods-item-action" block type="flex" justify="end" align="center">
+                <van-stepper @change="computeAmount" v-model="commodity[i].num" min="1" />
+                <van-button class="btn-del" @click="delGoodsItem(i)" size="mini">删除</van-button>
+            </van-row>
+
         </template>
       </van-card>
       <van-field
@@ -45,6 +47,7 @@
         name="productAmount"
         label="商品总金额"
         placeholder="商品总金额"
+        type="number"
         :rules="[{ required: true, message: '请填写商品总金额' }]"
       />
       <van-field
@@ -52,6 +55,7 @@
         name="orderAmount"
         label="订单总金额"
         placeholder="订单总金额"
+        type="number"
         :rules="[{ required: true, message: '请填写订单总金额' }]"
       />
       <van-field
@@ -59,6 +63,7 @@
         name="payAmount"
         label="实付金额"
         placeholder="实付金额"
+        type="number"
         :rules="[{ required: true, message: '请填写实付金额' }]"
       />
       <van-field
@@ -66,6 +71,7 @@
         name="payedMoney"
         label="已付金额"
         placeholder="已付金额"
+        type="number"
         :rules="[{ required: true, message: '请填写已付金额' }]"
       />
     </template>
@@ -133,6 +139,20 @@ export default {
     this.getRouteTitle();
   },
   computed: {
+    comProductAmount(){
+      let result = 0;
+      this.commodity.forEach(m=>{
+        result += m.num*m.price;
+      })
+      return result;
+    },
+    comOrderAmount(){
+      let result = 0;
+      this.commodity.forEach(m=>{
+        result += m.num*m.price;
+      })
+      return result;
+    },
     canSubmit() {
       if (
         this.commodity.length > 0 &&
@@ -153,15 +173,42 @@ export default {
       const { title } = this.$route.meta;
       if (title) this.title = title;
     },
-    addProduct(value) {
-      console.log(`value -->`, value);
-      // <!--        {"productId":9,"price":110,"skuId":148,"skuNo":"9-146_10-143","num":1,"unitName":"张"}-->
+    computeAmount(){
+      let result = 0;
+      this.commodity.forEach(m=>{
+        result += m.num*m.price;
+      })
 
+      this.productAmount =result;
+      this.orderAmount =result;
+    },
+    //删除列表项
+    delGoodsItem(i){
+      this.commodity.splice(i,1);
+      this.computeAmount();
+    },
+    addProduct(value) {
       const {
         category,
         goods: { title, num, id,unitName },
         sku: { skuString, price, skuKey,id:skuId }
       } = value;
+
+      let targetIdx ;
+
+      this.commodity.some((m,i)=>{
+            if(m.skuId === skuId){
+              targetIdx = i;
+              return true;
+            }
+      })
+
+      if(targetIdx !== undefined){
+        this.commodity[targetIdx].num += num;
+        this.computeAmount()
+        return;
+      }
+
       const item = {
         productId: id,
         title: title,
@@ -174,6 +221,7 @@ export default {
         skuId:skuId
       };
       this.commodity.push(item);
+      this.computeAmount()
     },
     removePy(i) {
       this.commodity.splice(i, 1);
@@ -235,4 +283,15 @@ export default {
 .submit {
   width: 60%;
 }
+
+    /deep/ .goods-item-action{
+        &  button,input{
+            background-color: #fff;
+        }
+        & .btn-del{
+            height: 28px;
+            border-color: #fff;
+        }
+
+    }
 </style>

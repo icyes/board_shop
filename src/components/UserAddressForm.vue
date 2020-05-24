@@ -82,11 +82,15 @@
       }
     },
     props:{
-      disabled:Boolean,
+      disabled:{
+        type:Boolean,
+        default:()=>true
+      },
       userForm:Object,
       type:String,
     },
     created() {
+      if(this.disabled)return
       this.getAreaList();
 
     },
@@ -126,20 +130,22 @@
           regionId: undefined
         }
       },
+      //根据pid获取列表
       async getRegionList(pid = 0, type = 0) {
         const { data } = await this.$apis.regionList(pid);
-        this.areaListArr[type] = data;
-        const result = {};
-        data.forEach(m => {
-          result[m.id] = m.name;
-        });
-        return result;
+        return new Promise( (resolve) => {
+          this.areaListArr[type] = data;
+          const result =  Object.fromEntries(data.map(item => [item.id, item.name]));
+          if(data.length>0) resolve(result)
+        })
       },
       async getAreaList(i = 0, pid = 0) {
+        //省、市、区类型
         const type = this.areaType[i];
-        this.areaList[type] = await this.getRegionList(pid, i);
-        if (i < 2 && this.areaList[type] != {}) {
-          pid = this.areaListArr[i][0]["id"];
+        const result = await this.getRegionList(pid, i);
+        this.areaList[type] = result;
+        if (i < 2 && result!={}) {
+          pid = Object.keys(result)[0];
           this.getAreaList(i + 1, pid);
         }
       },

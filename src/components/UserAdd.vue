@@ -6,7 +6,7 @@
                 left-arrow
                 @click-left="$emit('close')"
         />
-        <user-address-form @submit="submit" :userForm="userForm" >
+        <user-address-form @submit="submit" :userForm="userForm" :disabled="false" >
             <div slot="action" style="margin: 16px;">
                 <van-row type="flex" justify="center">
                     <van-button
