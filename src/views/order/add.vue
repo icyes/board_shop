@@ -1,98 +1,33 @@
 <template>
   <div class="fixed-container">
-    <van-nav-bar
-      :title="title"
-      left-text="返回"
-      left-arrow
-      @click-left="$emit('close')"
-    />
+    <van-nav-bar :title="title" left-text="返回" left-arrow @click-left="$emit('close')"/>
     <van-cell title="商品列表" icon="shop-o">
       <!-- 使用 right-icon 插槽来自定义右侧图标 -->
       <template #default>
-        <van-button
-          icon="add"
-          @click="showModal = 'productAdd'"
-          class="add-py"
-          hairline
-          size="small"
-          plain
-          type="info"
-          >添加</van-button
-        >
+        <van-button icon="add" @click="showModal = 'productAdd'" class="add-py" hairline size="small" plain type="info">添加</van-button>
       </template>
     </van-cell>
-    <van-empty
-      v-if="commodity && commodity.length === 0"
-      description="暂无商品"
-    />
+    <van-empty v-if="commodity && commodity.length === 0" description="暂无商品"/>
     <template v-else>
-      <van-card
-        v-for="(item, i) in commodity"
-        :key="i"
-        :num="item.num"
-        :price="item.price"
-        :desc="item.skuString"
-        :title="item.title"
-      >
+      <van-card v-for="(item, i) in commodity" :key="i" :num="item.num" :price="item.price" :desc="item.skuString" :title="item.title">
         <template #footer>
             <van-row class="goods-item-action" block type="flex" justify="end" align="center">
                 <van-stepper @change="computeAmount" v-model="commodity[i].num" min="1" />
                 <van-button class="btn-del" @click="delGoodsItem(i)" size="mini">删除</van-button>
             </van-row>
-
         </template>
       </van-card>
-      <van-field
-        v-model="productAmount"
-        name="productAmount"
-        label="商品总金额"
-        placeholder="商品总金额"
-        type="number"
-        :rules="[{ required: true, message: '请填写商品总金额' }]"
-      />
-      <van-field
-        v-model="orderAmount"
-        name="orderAmount"
-        label="订单总金额"
-        placeholder="订单总金额"
-        type="number"
-        :rules="[{ required: true, message: '请填写订单总金额' }]"
-      />
-      <van-field
-        v-model="payAmount"
-        name="payAmount"
-        label="实付金额"
-        placeholder="实付金额"
-        type="number"
-        :rules="[{ required: true, message: '请填写实付金额' }]"
-      />
-      <van-field
-        v-model="payedMoney"
-        name="payedMoney"
-        label="已付金额"
-        placeholder="已付金额"
-        type="number"
-        :rules="[{ required: true, message: '请填写已付金额' }]"
-      />
+      <van-field v-model="productAmount" name="productAmount" label="商品总金额" placeholder="商品总金额" type="number" :rules="[{ required: true, message: '请填写商品总金额' }]"/>
+      <van-field v-model="orderAmount" name="orderAmount" label="订单总金额" placeholder="订单总金额" type="number" :rules="[{ required: true, message: '请填写订单总金额' }]"/>
+      <van-field v-model="payAmount" name="payAmount" label="实付金额" placeholder="实付金额" type="number" :rules="[{ required: true, message: '请填写实付金额' }]"/>
+      <van-field v-model="payedMoney" name="payedMoney" label="已付金额" placeholder="已付金额" type="number" :rules="[{ required: true, message: '请填写已付金额' }]"/>
     </template>
 
     <van-row type="flex" justify="center">
-      <van-button
-        :disabled="!canSubmit"
-        round
-        block
-        class="submit"
-        type="info"
-        @click="submit"
-        >下单</van-button
-      >
+      <van-button :disabled="!canSubmit" round block class="submit" type="info" @click="submit">下单</van-button>
     </van-row>
 
-    <product-add
-      :class="showModal === 'productAdd' ? 'show-modal' : ''"
-      @close="showModal = ''"
-      @add="addProduct"
-    ></product-add>
+    <product-add :class="showModal === 'productAdd' ? 'show-modal' : ''" @close="showModal = ''" @add="addProduct"></product-add>
   </div>
 </template>
 

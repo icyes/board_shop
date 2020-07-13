@@ -1,68 +1,21 @@
 <template>
   <div class="container">
-    <van-nav-bar
-      :title="title"
-      left-text="返回"
-      left-arrow
-      @click-left="$router.go(-1)"
-    />
-    <van-search
-      v-model="keyWord"
-      show-action
-      shape="round"
-      background="#fff"
-      placeholder="请输入手机号/姓名"
-      @input="searchUser"
-    >
+    <van-nav-bar :title="title" left-text="返回" left-arrow @click-left="$router.go(-1)"/>
+    <van-search v-model="keyWord" show-action shape="round" background="#fff" placeholder="请输入手机号/姓名" @input="searchUser">
         <template #action>
             <van-button @click.native="showModal='userAdd'" type="info" size="small">新增用户</van-button>
         </template>
     </van-search>
-    <div
-      ref="scroll"
-      class="search-list"
-      :class="{ show: users && users.length > 0 }"
-    >
+    <div ref="scroll" class="search-list" :class="{ show: users && users.length > 0 }">
       <div>
-        <van-cell
-          @click.native="setCurUser(index)"
-          v-for="(item, index) in users"
-          :key="item.userId"
-          class="user-item"
-          :class="curUserIdx == index ? 'active' : ''"
-          :title="item.realName"
-          :value="item.mobile"
-        />
-        <van-row
-          v-if="users && users.length > 0"
-          style="height: 30px;padding: 10px 0"
-          type="flex"
-          align="center"
-          justify="center"
-          class="text-grey font-df"
-          >—— 没有更多了 ——</van-row
-        >
+        <van-cell @click.native="setCurUser(index)" v-for="(item, index) in users" :key="item.userId" class="user-item" :class="curUserIdx == index ? 'active' : ''" :title="item.realName" :value="item.mobile"/>
+        <van-row v-if="users && users.length > 0" style="height: 30px;padding: 10px 0" type="flex" align="center" justify="center" class="text-grey font-df">—— 没有更多了 ——</van-row>
       </div>
-      <van-row
-        style="height: 100%"
-        v-if="!users || users.length == 0"
-        type="flex"
-        align="center"
-        justify="center"
-        class="text-grey font-df"
-        >{{ keyWord ? "未搜索到相关用户" : "当前暂无用户" }}</van-row
-      >
+      <van-row style="height: 100%" v-if="!users || users.length == 0" type="flex" align="center" justify="center" class="text-grey font-df">{{ keyWord ? "未搜索到相关用户" : "当前暂无用户" }}</van-row>
     </div>
     <div v-if="users && users.length > 0" style="min-height: 100px">
-      <van-divider class="address" content-position="left"
-        >用户地址</van-divider
-      >
-
-      <div
-        class="address-list"
-        @click="onMask"
-        :class="!loading.newTag ? '' : 'new-tag-input-mask'"
-      >
+      <van-divider class="address" content-position="left">用户地址</van-divider>
+      <div class="address-list" @click="onMask" :class="!loading.newTag ? '' : 'new-tag-input-mask'">
         <van-tag
           @click.stop="setCurAddress(index)"
           class="address-item"
@@ -75,11 +28,7 @@
           >{{ item.addName }}</van-tag
         >
         <van-tag v-if="curUserIdx !=undefined" class="add-tag" :class="{'active':curAddressIdx==-1,'show':loading.newTag}" size="large" plain type="success">
-          <div
-            class="new-tag-btn"
-            v-if="!loading.newTag"
-            @click="showAddressAdd"
-          >
+          <div class="new-tag-btn" v-if="!loading.newTag" @click="showAddressAdd">
                   <van-icon name="add" style="margin: 1px 4px 0 0 " />
                   <span>新标签</span>
           </div>
@@ -99,20 +48,11 @@
       </div>
     </div>
 
-    <van-divider content-position="center" style="margin-top: 20px"
-      >用户信息</van-divider
-    >
+    <van-divider content-position="center" style="margin-top: 20px">用户信息</van-divider>
       <user-address-form disabled @submit="onNext" :userForm="userForm" >
           <div slot="action" style="margin: 16px;">
               <van-row type="flex" justify="center">
-                  <van-button
-                          round
-                          :disabled="curAddressIdx===undefined"
-                          block
-                          style="width:50%"
-                          type="info"
-                          native-type="submit"
-                  >
+                  <van-button round :disabled="curAddressIdx===undefined" block style="width:50%" type="info" native-type="submit">
                       开单
                   </van-button>
               </van-row>
@@ -191,9 +131,7 @@ export default {
       const {title} = this.$route.meta;
       if (title) this.title = title;
     },
-    /**
-     * 用户搜索
-     */
+    //用户搜索
     searchUser() {
       const loading = this.loading;
       if (loading.search) return;
@@ -222,12 +160,7 @@ export default {
       this.users = data||[];
       this.updateBs();
     },
-    /**
-     * 根据用户获取地址
-     * @param uid
-     * @returns {Promise<void>}
-     */
-
+    //根据用户获取地址
     async getAddress() {
       if(this.curUserIdx == undefined) return ;
       const user = this.users[this.curUserIdx];
@@ -270,11 +203,7 @@ export default {
       this.$forceUpdate();
     },
 
-
-    /**
-     * 添加用户地址
-     * @returns {Promise<void>}
-     */
+   //添加用户地址
     async addUser() {
       if(this.loading.addUser) return ;
       this.loading.addUser = true
@@ -286,12 +215,14 @@ export default {
       this.$notify({type:'success ',message:rep.msg});
       this.resetSubmit();
     },
+
     resetSubmit: function () {
       this.userClear();
       this.users = undefined;
       this.keyWord = ""
       this.resetForm();
     },
+
     onNext(values) {
       if(this.curAddressIdx == undefined){
         this.$notify({type:'danger',message:'请选择地址标签，或新建一个标签'})
@@ -301,9 +232,8 @@ export default {
       this.showModal = 'orderAdd'
 
     },
-    /**
-     * 用户列表刷新
-     */
+
+    //用户列表刷新
     updateBs() {
       this.$nextTick(() => {
         setTimeout(() => {
@@ -313,19 +243,18 @@ export default {
         }, 300);
       });
     },
-    /**
-     * 添加新地址
-     */
+
+    //添加新地址
     onMask(){
       this.loading.newTag = false;
       if(this.addName)this.curAddressIdx = -1
       else this.curAddressIdx = undefined
     },
+
     onNewTag(){
       this.loading.newTag = true;
       this.curAddressIdx = undefined
     },
-
 
     //查询用户的地区详情
     async getRegionInfo(regionId) {

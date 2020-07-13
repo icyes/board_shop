@@ -1,8 +1,6 @@
 import request from "@/request"
 import { AddUserProps,AddUserAddress,QuerySkuInfo,OrderBookForm} from './data'
 const apis = {
-
-
     //用户名称和手机号查询用户
     searchUser:async (name:any)=>request('/api/user/search.do',{data:{name},method:'post'}),
 
